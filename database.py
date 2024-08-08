@@ -73,6 +73,17 @@ class TaskDatabase:
             print("Error while updating task: ")
             print(e)
 
+    def get_all_tasks(self):
+        sql_select_all_statement="SELECT * FROM tasks;"
+        rows = []
+        try:
+            with sqlite3.connect(self.db_filename) as my_connection:
+                my_cursor = my_connection.cursor()
+                my_cursor.execute(sql_select_all_statement)
+                rows = my_cursor.fetchall()
+        except sqlite3.Error as e:
+            print("Error while retrieving all tasks from database: ", e)
+        return rows
 
 if __name__ == '__main__':
     my_database = TaskDatabase("test_todo.sqlite3")
@@ -88,3 +99,5 @@ if __name__ == '__main__':
     second_task.tags = '#thuis #persoonlijk'
     second_task.id = 2
     my_database.update_task(second_task)
+    all_tasks = my_database.get_all_tasks()
+    print(all_tasks)
