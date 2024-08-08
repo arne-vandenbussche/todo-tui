@@ -12,8 +12,10 @@ class RecordListDisplay(npyscreen.FormMutt):
         self.update_list()
 
     def update_list(self):
-        self.wStatus1 = "a: all tasks | d: todo by deadline | p: todo by planned"
-        self.wStatus2 = "ctrl-a: add | ctrl-d: delete | ctrl-x: set done | ctrl-c: cancel | enter: update task"
+        self.wStatus1.value = "a: all tasks | d: todo by deadline | p: todo by planned | t: today | D: done | C: cancelled"
+        self.wStatus2.value = "ctrl-a: add | ctrl-d: delete | ctrl-x: set done | ctrl-c: cancel | enter: update task | :q = quit"
+        self.wMain.values = self.parentApp.myDatabase.get_all_tasks()
+        self.wMain.display()
 
 
 class EditRecord(npyscreen.ActionForm):

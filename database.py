@@ -73,7 +73,13 @@ class TaskDatabase:
             print("Error while updating task: ")
             print(e)
 
-    def get_all_tasks(self):
+    def convert_tuple_to_task(self, task_tuple: tuple) -> Task:
+        my_task = Task(task_tuple[0], task_tuple[1], task_tuple[2], task_tuple[3],
+                       task_tuple[4], task_tuple[5], task_tuple[6], task_tuple[7], 
+                       task_tuple[8])
+        return my_task
+
+    def get_all_tasks(self) -> list[Task]:
         sql_select_all_statement="SELECT * FROM tasks;"
         rows = []
         try:
@@ -83,7 +89,10 @@ class TaskDatabase:
                 rows = my_cursor.fetchall()
         except sqlite3.Error as e:
             print("Error while retrieving all tasks from database: ", e)
-        return rows
+        # rows is a list of tuples, we will convert this to a row of Task objects
+        task_list = [self.convert_tuple_to_task(task_tuple) for task_tuple in rows]
+        return task_list
+
 
 if __name__ == '__main__':
     my_database = TaskDatabase("test_todo.sqlite3")
@@ -99,5 +108,10 @@ if __name__ == '__main__':
     second_task.tags = '#thuis #persoonlijk'
     second_task.id = 2
     my_database.update_task(second_task)
+    third_task = Task(id=None, description='vrijstelling onderozken van Farouk. Gemaild begin juli. Al een kort antwoord gegeven. Dossier moet nog verder onderzocht worden', date_deadline=None,
+                       date_planned='2024-08-07', date_done=None, date_canceled=None,
+                       status='todo', tags='#thuis', refs=None)
+    my_database.create_task(third_task)
     all_tasks = my_database.get_all_tasks()
-    print(all_tasks)
+    for task in all_tasks:
+        print(task)
