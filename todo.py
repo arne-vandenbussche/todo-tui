@@ -56,7 +56,7 @@ class RecordList(npyscreen.MultiLineAction):
     def set_list_todo_by_deadline(self, *args, **keywords):
         all_tasks = self.parent.parentApp.myDatabase.get_all_tasks()
         todo_tasks = [task for task in all_tasks if task.status == 'todo']
-        sorted_todo_tasks_by_deadline = sorted(todo_tasks, key=lambda task: task.date_deadline, reverse=True)
+        sorted_todo_tasks_by_deadline = sorted(todo_tasks, key=lambda task: task.date_deadline)
         self.parent.display_list = sorted_todo_tasks_by_deadline
         self.parent.update_list()
 
@@ -69,7 +69,7 @@ class RecordList(npyscreen.MultiLineAction):
     def set_list_todo_by_planned(self, *args, **keywords):
         all_tasks = self.parent.parentApp.myDatabase.get_all_tasks()
         todo_tasks = [task for task in all_tasks if task.status == 'todo']
-        sorted_todo_tasks_by_planned = sorted(todo_tasks, key=lambda task: task.date_planned, reverse=True)
+        sorted_todo_tasks_by_planned = sorted(todo_tasks, key=lambda task: task.date_planned)
         self.parent.display_list = sorted_todo_tasks_by_planned
         self.parent.update_list()
 
@@ -114,7 +114,10 @@ class RecordListDisplay(npyscreen.FormMuttActive):
     ACTION_CONTROLLER = MyActionController
 
     def beforeEditing(self):
-        self.display_list = self.parentApp.myDatabase.get_all_tasks()
+        today = datetime.today().strftime('%Y-%m-%d') 
+        today_tasks = [task for task in self.parentApp.myDatabase.get_all_tasks() if task.status == 'todo' and (task.date_deadline <= today 
+                       or task.date_planned <= today)]
+        self.display_list = today_tasks
         self.update_list()
 
     def update_list(self):
