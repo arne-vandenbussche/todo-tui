@@ -56,8 +56,11 @@ class RecordList(npyscreen.MultiLineAction):
     def set_list_todo_by_deadline(self, *args, **keywords):
         all_tasks = self.parent.parentApp.myDatabase.get_all_tasks()
         todo_tasks = [task for task in all_tasks if task.status == 'todo']
-        sorted_todo_tasks_by_deadline = sorted(todo_tasks, key=lambda task: task.date_deadline)
-        self.parent.display_list = sorted_todo_tasks_by_deadline
+        todo_tasks_without_deadline = [task for task in todo_tasks if task.date_deadline is None or task.date_deadline == '']
+        todo_tasks_with_deadline = [task for task in todo_tasks if task.date_deadline is not None and task.date_deadline != '']
+        sorted_tasks_with_deadline = sorted(todo_tasks_with_deadline, key=lambda task: task.date_deadline)
+        final_list = sorted_tasks_with_deadline + todo_tasks_without_deadline
+        self.parent.display_list = final_list
         self.parent.update_list()
 
     def set_list_all_tasks(self, *args, **keywords):
@@ -69,8 +72,11 @@ class RecordList(npyscreen.MultiLineAction):
     def set_list_todo_by_planned(self, *args, **keywords):
         all_tasks = self.parent.parentApp.myDatabase.get_all_tasks()
         todo_tasks = [task for task in all_tasks if task.status == 'todo']
-        sorted_todo_tasks_by_planned = sorted(todo_tasks, key=lambda task: task.date_planned)
-        self.parent.display_list = sorted_todo_tasks_by_planned
+        todo_tasks_without_date_planned = [task for task in todo_tasks if task.date_planned is None or task.date_planned == '']
+        todo_tasks_with_date_planned = [task for task in todo_tasks if task.date_planned is not None and task.date_planned != '']
+        sorted_todo_tasks_by_planned = sorted(todo_tasks_with_date_planned, key=lambda task: task.date_planned)
+        final_list = sorted_todo_tasks_by_planned + todo_tasks_without_date_planned
+        self.parent.display_list = final_list
         self.parent.update_list()
 
     def set_list_done(self, *args, **keywords):
@@ -89,10 +95,15 @@ class RecordList(npyscreen.MultiLineAction):
 
     def set_list_today(self, *args, **keywords):
         all_tasks = self.parent.parentApp.myDatabase.get_all_tasks()
+        tasks_with_deadline_or_date_planned = [task for task in all_tasks if (task.date_deadline is not None and 
+                                                  task.date_deadline != '') or (task.date_planned is not None and 
+                                                  task.date_planned != '')]
         today = datetime.today().strftime('%Y-%m-%d') 
-        today_tasks = [task for task in all_tasks if task.status == 'todo' and (task.date_deadline <= today 
-                       or task.date_planned <= today)]
-        self.parent.display_list = today_tasks
+        today_tasks = [task for task in tasks_with_deadline_or_date_planned 
+            if task.status == 'todo' and (task.date_deadline <= today and task.date_deadline is not None and task.date_deadline != '')
+                       or (task.date_planned <= today and task.date_planned is not None and task.date_planned != '')]
+        today_tasks_sorted = sorted(today_tasks, key=lambda task: task.date_deadline)
+        self.parent.display_list = today_tasks_sorted
         self.parent.update_list()
 
 class MyActionController(npyscreen.ActionControllerSimple):
@@ -115,9 +126,16 @@ class RecordListDisplay(npyscreen.FormMuttActive):
 
     def beforeEditing(self):
         today = datetime.today().strftime('%Y-%m-%d') 
-        today_tasks = [task for task in self.parentApp.myDatabase.get_all_tasks() if task.status == 'todo' and (task.date_deadline <= today 
-                       or task.date_planned <= today)]
-        self.display_list = today_tasks
+        all_tasks = self.parentApp.myDatabase.get_all_tasks()
+        tasks_with_deadline_or_date_planned = [task for task in all_tasks if (task.date_deadline is not None and 
+                                                  task.date_deadline != '') or (task.date_planned is not None and 
+                                                  task.date_planned != '')]
+        today = datetime.today().strftime('%Y-%m-%d') 
+        today_tasks = [task for task in tasks_with_deadline_or_date_planned 
+            if task.status == 'todo' and (task.date_deadline <= today and task.date_deadline is not None and task.date_deadline != '')
+                       or (task.date_planned <= today and task.date_planned is not None and task.date_planned != '')]
+        today_tasks_sorted = sorted(today_tasks, key=lambda task: task.date_deadline)
+        self.display_list = today_tasks_sorted
         self.update_list()
 
     def update_list(self):
