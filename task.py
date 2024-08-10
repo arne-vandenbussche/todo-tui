@@ -14,8 +14,9 @@ class Task:
     refs: Optional[str]
 
     def __str__(self):
-        s = f"{str(self.id):<4}| {self.description[:30]:<31}| d: {str(self.date_deadline):<11}| p: {str(self.date_planned):<11}| " 
-        s = s + f"done: {str(self.date_done):<11}| canceled: {str(self.date_canceled):<11} | {str(self.status):<12}| tags: {str(self.tags)}"
+        s = f"{str(self.id):<4}| {self.description[:50]:<51}| d: {str(self.date_deadline):<11}| p: {str(self.date_planned):<11}| " 
+        s = s + f"tags: {str(self.tags)[:40]:<41} | {str(self.status):<12}" 
+        s = s + f"| done: {str(self.date_done):<11}| canceled: {str(self.date_canceled):<11} |"
 
         return s
 

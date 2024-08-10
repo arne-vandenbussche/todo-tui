@@ -204,7 +204,7 @@ class EditRecord(npyscreen.ActionForm):
         else:
             added_task = Task(id=None, description=self.wgDescription.value, 
                                date_deadline=self.wgDate_deadline.value, date_planned=self.wgDate_planned.value,
-                               date_done='', date_canceled='', status='todo', tags=self.wgTags.value, refs=self.wgRefs)
+                               date_done='', date_canceled='', status='todo', tags=self.wgTags.value, refs=self.wgRefs.value)
             self.parentApp.myDatabase.add_task(added_task)
         self.parentApp.switchFormPrevious()
 
