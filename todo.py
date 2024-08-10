@@ -41,8 +41,7 @@ class RecordList(npyscreen.MultiLineAction):
         task.date_done = datetime.today().strftime('%Y-%m-%d')
         self.parent.parentApp.myDatabase.update_task(task)
         all_tasks = self.parent.parentApp.myDatabase.get_all_tasks()
-        self.parent.display_list = all_tasks
-        self.parent.update_list()
+        self.set_list_today()
 
     def when_cancel_task(self, *args, **keywords):
         task = self.values[self.cursor_line]
@@ -50,8 +49,7 @@ class RecordList(npyscreen.MultiLineAction):
         task.date_canceled = datetime.today().strftime('%Y-%m-%d')
         self.parent.parentApp.myDatabase.update_task(task)
         all_tasks = self.parent.parentApp.myDatabase.get_all_tasks()
-        self.parent.display_list = all_tasks
-        self.parent.update_list()
+        self.set_list_today()
 
     def set_list_todo_by_deadline(self, *args, **keywords):
         all_tasks = self.parent.parentApp.myDatabase.get_all_tasks()
@@ -100,8 +98,8 @@ class RecordList(npyscreen.MultiLineAction):
                                                   task.date_planned != '')]
         today = datetime.today().strftime('%Y-%m-%d') 
         today_tasks = [task for task in tasks_with_deadline_or_date_planned 
-            if task.status == 'todo' and (task.date_deadline <= today and task.date_deadline is not None and task.date_deadline != '')
-                       or (task.date_planned <= today and task.date_planned is not None and task.date_planned != '')]
+            if task.status == 'todo' and ((task.date_deadline <= today and task.date_deadline is not None and task.date_deadline != '')
+                       or (task.date_planned <= today and task.date_planned is not None and task.date_planned != ''))]
         today_tasks_sorted = sorted(today_tasks, key=lambda task: task.date_deadline)
         self.parent.display_list = today_tasks_sorted
         self.parent.update_list()
@@ -125,15 +123,14 @@ class RecordListDisplay(npyscreen.FormMuttActive):
     ACTION_CONTROLLER = MyActionController
 
     def beforeEditing(self):
-        today = datetime.today().strftime('%Y-%m-%d') 
         all_tasks = self.parentApp.myDatabase.get_all_tasks()
         tasks_with_deadline_or_date_planned = [task for task in all_tasks if (task.date_deadline is not None and 
                                                   task.date_deadline != '') or (task.date_planned is not None and 
                                                   task.date_planned != '')]
         today = datetime.today().strftime('%Y-%m-%d') 
         today_tasks = [task for task in tasks_with_deadline_or_date_planned 
-            if task.status == 'todo' and (task.date_deadline <= today and task.date_deadline is not None and task.date_deadline != '')
-                       or (task.date_planned <= today and task.date_planned is not None and task.date_planned != '')]
+            if task.status == 'todo' and ((task.date_deadline <= today and task.date_deadline is not None and task.date_deadline != '')
+                       or (task.date_planned <= today and task.date_planned is not None and task.date_planned != ''))]
         today_tasks_sorted = sorted(today_tasks, key=lambda task: task.date_deadline)
         self.display_list = today_tasks_sorted
         self.update_list()
