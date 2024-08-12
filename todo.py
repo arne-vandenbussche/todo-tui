@@ -108,6 +108,7 @@ class MyActionController(npyscreen.ActionControllerSimple):
     def create(self):
         self.add_action('^quit', self.quit_application, False)
         self.add_action('^/.*', self.set_search, False)
+        self.add_action('^today', self.export_today, False)
 
     def set_search(self, command_line, control_widget_proxy, live):
         search_term = command_line[1:].strip()
@@ -117,6 +118,21 @@ class MyActionController(npyscreen.ActionControllerSimple):
 
     def quit_application(self, command_line, control_widget_proxy, live):
         self.parent.parentApp.switchForm(None)
+
+    def export_today(self, command_line, control_widget_proxy, live):
+        all_tasks = self.parent.parentApp.myDatabase.get_all_tasks()
+        tasks_with_deadline_or_date_planned = [task for task in all_tasks if (task.date_deadline is not None and 
+                                                  task.date_deadline != '') or (task.date_planned is not None and 
+                                                  task.date_planned != '')]
+        today = datetime.today().strftime('%Y-%m-%d') 
+        today_tasks = [task for task in tasks_with_deadline_or_date_planned 
+            if task.status == 'todo' and ((task.date_deadline <= today and task.date_deadline is not None and task.date_deadline != '')
+                       or (task.date_planned <= today and task.date_planned is not None and task.date_planned != ''))]
+        today_tasks_sorted = sorted(today_tasks, key=lambda task: task.date_deadline)
+        with open('today.md', 'a') as my_file:
+            for task in today_tasks_sorted:
+                my_file.write(f"- {task.description}\n")
+        
 
 class RecordListDisplay(npyscreen.FormMuttActive):
     MAIN_WIDGET_CLASS = RecordList
