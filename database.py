@@ -123,6 +123,22 @@ class TaskDatabase:
         except sqlite3.Error as e:
             logger.error(f"Error while creating task: {repr(e)}")
 
+    def tasks_for_today(self):
+        sql_today_tasks = """ select * from tasks
+        where (status == 'todo') and ((date_deadline is not Null and date_deadline != '' and date_deadline <= date())
+            or (date_planned is not Null and date_planned != '' and date_planned <= date()))
+            order by date_deadline desc, date_planned desc;
+        """
+        rows = []
+        try: 
+            with sqlite3.connect(self.db_filename) as my_connection:
+                my_cursor = my_connection.cursor()
+                my_cursor.execute(sql_today_tasks)
+                rows = my_cursor.fetchall()
+        except sqlite3.Error as e:
+            logger.error(f"Error while retrieving tasks for today: {repr(e)}")
+        task_list = [self.convert_tuple_to_task(task_tuple) for task_tuple in rows]
+        return task_list
 
 if __name__ == '__main__':
     my_database = TaskDatabase("test_todo.sqlite3")
@@ -138,10 +154,17 @@ if __name__ == '__main__':
     second_task.tags = '#thuis #persoonlijk'
     second_task.id = 2
     my_database.update_task(second_task)
-    third_task = Task(id=None, description='vrijstelling onderozken van Farouk. Gemaild begin juli. Al een kort antwoord gegeven. Dossier moet nog verder onderzocht worden', date_deadline=None,
+    third_task = Task(id=None, description='vrijstelling onderzoeken van Farouk. Gemaild begin juli. Al een kort antwoord gegeven. Dossier moet nog verder onderzocht worden', date_deadline=None,
                        date_planned='2024-08-07', date_done=None, date_canceled=None,
                        status='todo', tags='#thuis', refs=None)
     my_database.create_task(third_task)
     all_tasks = my_database.get_all_tasks()
     for task in all_tasks:
         print(task)
+    print("TASKS FOR TODAY\n==============")
+    my_tasks_for_today = my_database.tasks_for_today()
+    if my_tasks_for_today is None:
+        print("Geen taken voor vandaag")
+    else:
+        for task in my_database.tasks_for_today():
+            print(task)
